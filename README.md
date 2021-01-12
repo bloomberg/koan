@@ -99,3 +99,9 @@ or skipgram embeddings by running with `--cbow false`. `./build/koan --help` for
 ## License
 
 Please read the [LICENSE](LICENSE) file.
+
+## Benchmarks
+
+<p align="center"><img src="word2vec_train_times_cbow.png" width="400"><img src="word2vec_train_times_sg.png" width="400"></p>
+
+See [report](https://arxiv.org/abs/2012.15332) for details.
