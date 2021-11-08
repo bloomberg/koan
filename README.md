@@ -6,7 +6,7 @@
 
 A word2vec negative sampling implementation with correct CBOW update. kōan only depends on Eigen.
 
-_Authors_: Ozan Irsoy, Adrian Benton, Karl Stratos
+_Authors_: Ozan İrsoy, Adrian Benton, Karl Stratos
 
 Thanks to Cyril Khazan for helping kōan better scale to many threads.
 
@@ -24,12 +24,14 @@ Although continuous bag of word (CBOW) embeddings can be trained more quickly th
 
 We release kōan so that others can efficiently train CBOW embeddings using the corrected weight update. See this [technical report](https://arxiv.org/abs/2012.15332) for benchmarks of kōan vs. gensim word2vec negative sampling implementations.  If you use kōan to learn word embeddings for your own work, please cite:
 
-> Ozan İrsoy, Adrian Benton, and Karl Stratos. "kōan: A Corrected CBOW Implementation." arXiv preprint __arXiv:2012.15332__ (__2020__).
+> Ozan İrsoy, Adrian Benton, and Karl Stratos. "Corrected CBOW Performs as well as Skip-gram." The 2nd Workshop on Insights from Negative Results in NLP (__2021__).
 
 [1] Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg S Corrado, and Jeff Dean. Distributed representations of words and phrases and their compositionality. In Advances in neural information processing systems, pages 3111–3119, 2013.
 
 [2] Karl Stratos, Michael Collins, and Daniel Hsu. Model-based word embeddings from decompositions of count matrices. In Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing
 (Volume 1: Long Papers), pages 1282–1291, 2015.
+
+See [here](https://doi.org/10.5281/zenodo.5542319) for kōan embeddings trained on the English cleaned common crawl corpus (C4).
 
 ## Building
 
@@ -104,4 +106,4 @@ Please read the [LICENSE](LICENSE) file.
 
 <p align="center"><img src="word2vec_train_times_cbow.png" width="400"><img src="word2vec_train_times_sg.png" width="400"></p>
 
-See [report](https://arxiv.org/abs/2012.15332) for details.
+See the [report](https://arxiv.org/abs/2012.15332) for more details.

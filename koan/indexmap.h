@@ -60,14 +60,8 @@ class IndexMap {
     i2k_.clear();
   }
 
-  typename std::unordered_map<Key, size_t>::const_iterator
-  find(const Key& key) const {
-    return k2i_.find(key);
-  }
-  bool
-  is_end(typename std::unordered_map<Key, size_t>::const_iterator index) const {
-    return index == k2i_.end();
-  }
+  auto find(const Key& key) const { return k2i_.find(key); }
+  auto end() const { return k2i_.end(); }
   size_t lookup(const Key& key) const { return k2i_.at(key); }
   size_t operator[](const Key& key) const { return lookup(key); }
 

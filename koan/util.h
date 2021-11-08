@@ -64,8 +64,7 @@ auto split(const IN& s, char delim = ' ') {
 /// @param[in] num_threads number of threads to run
 /// @tparam F callable that takes size_t elt_idx, size_t thread_idx as arguments
 template <typename F>
-inline void
-parallel_for(size_t begin, size_t end, F f, size_t num_threads = 8) {
+void parallel_for(size_t begin, size_t end, F f, size_t num_threads = 8) {
   std::vector<std::thread> threads(num_threads);
   std::atomic<size_t> i = begin;
   for (size_t ti = 0; ti < num_threads; ti++) {
@@ -93,11 +92,11 @@ parallel_for(size_t begin, size_t end, F f, size_t num_threads = 8) {
 /// elements to each thread
 /// @tparam F callable that takes size_t elt_idx, size_t thread_idx as arguments
 template <typename F>
-inline void parallel_for_partitioned(size_t begin,
-                                     size_t end,
-                                     F f,
-                                     size_t num_threads = 8,
-                                     bool consecutive_alloc = true) {
+void parallel_for_partitioned(size_t begin,
+                              size_t end,
+                              F f,
+                              size_t num_threads = 8,
+                              bool consecutive_alloc = true) {
   size_t total_size = end - begin;
   size_t batch_size = total_size / num_threads;
   std::vector<std::thread> threads(num_threads);

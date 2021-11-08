@@ -54,8 +54,7 @@ class AliasSampler {
     KOAN_ASSERT((0.9999 <= probSum) and (probSum <= 1.0001));
 
     // Step 2
-    std::vector<Index> small;
-    std::vector<Index> large;
+    std::vector<Index> small, large;
 
     // Step 3
     std::vector<Real> scaledProbs = probs;
@@ -73,8 +72,7 @@ class AliasSampler {
     }
 
     // Step 5
-    Index l;
-    Index g;
+    Index l, g;
 
     while (not(small.empty() or large.empty())) {
       l = small.back();

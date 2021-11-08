@@ -20,6 +20,7 @@
 #define KOAN_CLI_H
 
 #include <functional>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -36,7 +37,7 @@ namespace internal {
 namespace fromstr { // Convert from string to things
 
 template <typename T>
-inline T to(const std::string& s);
+T to(const std::string& s);
 
 template <>
 inline std::string to<std::string>(const std::string& s) {
@@ -74,6 +75,11 @@ inline unsigned long to<unsigned long>(const std::string& s) {
 }
 
 template <>
+inline unsigned long long to<unsigned long long>(const std::string& s) {
+  return std::stoull(s);
+}
+
+template <>
 inline bool to<bool>(const std::string& s) {
   if (s == "true" or s == "True" or s == "1") { return true; }
   if (s == "false" or s == "False" or s == "0") { return false; }
@@ -82,6 +88,16 @@ inline bool to<bool>(const std::string& s) {
 }
 
 } // namespace fromstr
+
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
+  if (!v.empty()) {
+    out << '[';
+    std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, ", "));
+    out << "\b\b]";
+  }
+  return out;
+}
 
 template <typename T>
 std::string tostr(const T& x) {
@@ -120,14 +136,17 @@ class ArgBase {
           std::vector<std::string> names,
           std::string value,
           Require required,
-          std::unique_ptr<ValidityBase> validity = nullptr)
+          std::unique_ptr<ValidityBase> validity = nullptr,
+          bool nargs = false)
       : descr_(std::move(descr)),
         names_(std::move(names)),
         value_(std::move(value)),
         required_(required),
+        nargs_(nargs),
         validity_(std::move(validity)) {}
   virtual std::string value_str() const = 0;
   virtual bool is_flag() const = 0;
+  bool is_nary() { return nargs_; }
 
  protected:
   std::string descr_;              // description of the option in the helpstr
@@ -135,6 +154,7 @@ class ArgBase {
   std::string value_;              // value name in the helpstr
   Require required_ = Optional;    // Required vs Optional
   bool parsed_ = false;            // is this already parsed
+  bool nargs_ = false;             // Whether this accepts more than 1 argument
   std::unique_ptr<ValidityBase> validity_; // checks if parsed value is valid
 
   void parse(const std::string& value) {
@@ -253,6 +273,39 @@ class Arg : public ArgBase {
   void parse_(const std::string& value) override {
     dest_ = internal::fromstr::to<T>(value);
     if (validity_) { dynamic_cast<Validity<T>&>(*validity_).check(dest_); }
+  }
+};
+
+template <typename T>
+class Arg<std::vector<T>> : public ArgBase {
+ protected:
+  std::vector<T>& dest_;
+
+ public:
+  Arg<std::vector<T>>(std::vector<T>& dest,
+                      std::string descr,
+                      std::vector<std::string> names,
+                      std::string value,
+                      Require required = Optional,
+                      std::unique_ptr<ValidityBase> validity = nullptr)
+      : ArgBase(std::move(descr),
+                std::move(names),
+                std::move(value),
+                required,
+                std::move(validity),
+                true),
+        dest_(dest) {}
+
+  bool is_flag() const override { return false; }
+
+  std::string value_str() const override { return tostr(dest_); }
+
+ private:
+  void parse_(const std::string& value) override {
+    T arg = internal::fromstr::to<T>(value);
+    if (validity_) { dynamic_cast<Validity<T>&>(*validity_).check(arg); }
+
+    dest_.push_back(arg);
   }
 };
 
@@ -463,6 +516,15 @@ inline void Args::parse(const std::vector<std::string>& argv) {
       if (opt.is_flag()) {
         opt.parse("");
         i++;
+      } else if (opt.is_nary()) {
+        size_t j = i + 1;
+        std::string tmpname;
+        while (j < argv.size() && !is_name(argv[j], tmpname)) {
+          opt.parse(argv.at(j));
+          j++;
+        }
+
+        i = j;
       } else {
         ensure((i + 1) < argv.size(),
                "Option `" + name + "` is missing value!");
@@ -552,7 +614,6 @@ inline void Args::add(T& dest,
   }
   named_args_.push_back(
       std::make_unique<Arg<T>>(dest, descr, names, value, required));
-  // I cannot use make_unique because I made the ctor protected. Is this OK?
 }
 
 template <typename T, typename T2>

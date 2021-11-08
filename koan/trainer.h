@@ -45,6 +45,8 @@ class Trainer {
     // data structures to avoid race conditions. Multithreading itself is
     // done outside of the Trainer class.
     unsigned threads = 8;
+
+    bool use_bad_update = false;
   };
 
  private:
@@ -148,10 +150,15 @@ class Trainer {
       }
       // backward pass
       if (sig_pos < 1.) {
-        source_idx_grad +=
-            center_word * ((sig_pos - 1.) * lr) /
-            num_source_ids; // ISSUE above, must normalize by number of context
-                            // words when updating context embeddings
+        if (params_.use_bad_update) {
+          // ISSUE above, typical, wrong update!
+          source_idx_grad += center_word * ((sig_pos - 1.) * lr);
+        } else {
+          // ISSUE above, must normalize by number of
+          // context words when updating context embeddings
+          source_idx_grad +=
+              center_word * ((sig_pos - 1.) * lr) / num_source_ids;
+        }
         center_word -= avg * ((sig_pos - 1.) * lr);
       }
 
@@ -167,8 +174,13 @@ class Trainer {
         }
         // backward
         if (sig_neg > 0.) {
-          source_idx_grad +=
-              rw * (sig_neg * lr) / num_source_ids; // ISSUE above
+          if (params_.use_bad_update) {
+            // ISSUE above, typical, wrong update!
+            source_idx_grad += rw * (sig_neg * lr);
+          } else {
+            // ISSUE above
+            source_idx_grad += rw * (sig_neg * lr) / num_source_ids;
+          }
           rw -= avg * (sig_neg * lr);
         }
       }

@@ -16,10 +16,22 @@ target_include_directories(test_utils PUBLIC "${PROJECT_SOURCE_DIR}/extern")
 target_include_directories(test_gradcheck PUBLIC "${PROJECT_SOURCE_DIR}/extern")
 
 add_compile_options(-Wall -Wextra -Werror)
-target_compile_options(koan PUBLIC -Ofast -march=native -mtune=native)
+
+if(KOAN_ENABLE_ZIP)
+  target_compile_options(koan PUBLIC -Ofast -march=native -mtune=native -DKOAN_ENABLE_ZIP)
+else()
+  target_compile_options(koan PUBLIC -Ofast -march=native -mtune=native)
+endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(koan PRIVATE Threads::Threads)
+
+if(KOAN_ENABLE_ZIP)
+  find_package(ZLIB REQUIRED)
+  target_link_libraries(koan PRIVATE Threads::Threads ZLIB::ZLIB)
+else()
+  target_link_libraries(koan PRIVATE Threads::Threads)
+endif()
+
 
 install(TARGETS koan DESTINATION bin)
